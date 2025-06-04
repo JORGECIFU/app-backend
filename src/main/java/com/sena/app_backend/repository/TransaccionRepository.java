@@ -9,5 +9,6 @@ import java.util.List;
  * Permite realizar consultas y operaciones CRUD sobre las transacciones de los monederos.
  */
 public interface TransaccionRepository extends JpaRepository<Transaccion, Long> {
+
   List<Transaccion> findByMonederoIdOrderByFechaTransaccionDesc(Long monederoId);
 }

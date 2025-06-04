@@ -7,9 +7,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -57,27 +59,29 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
-        .csrf(csrf -> csrf.disable())
+        // 1) Deshabilitamos CSRF (si estás usando JWT, safe to disable)
+        .csrf(AbstractHttpConfigurer::disable)
+
+        // 2) Habilitamos CORS y delegamos en la configuración de Spring MVC.
+        .cors(Customizer.withDefaults())
+
+        // 3) Ahora definimos las reglas de autorización.
         .authorizeHttpRequests(auth -> auth
-            // LOGIN y registro de usuarios abiertos
-            .requestMatchers("/api/auth/**").permitAll()
-        .requestMatchers(HttpMethod.POST, "/api/usuarios").permitAll()
+            .requestMatchers("/api/auth/login").permitAll()
+            .requestMatchers("/api/auth/refresh").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/usuarios").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/usuarios").hasAuthority("ADMINISTRADOR")
+            .requestMatchers(HttpMethod.PUT, "/api/admin/**").hasAuthority("ADMINISTRADOR")
+            .requestMatchers("/api/usuarios/{id}").hasAnyAuthority("USUARIO","ADMINISTRADOR")
+            .anyRequest().authenticated()
+        )
 
-        // Sólo ADMINISTRADOR puede listar todos los usuarios
-        .requestMatchers(HttpMethod.GET, "/api/usuarios").hasAuthority("ADMINISTRADOR")
+        // 4) Configuramos la aplicación como sin estado (JWT)
+        .sessionManagement(sess ->
+            sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        )
 
-        // Sólo ADMINISTRADOR puede promover o administradores
-        .requestMatchers(HttpMethod.PUT, "/api/admin/**").hasAuthority("ADMINISTRADOR")
-
-        // USUARIO o ADMINISTRADOR pueden operaciones sobre un usuario específico
-        .requestMatchers("/api/usuarios/{id}").hasAnyAuthority("USUARIO","ADMINISTRADOR")
-
-        // El resto requiere cualquier autenticación válida
-        .anyRequest().authenticated()
-      )
-      .sessionManagement(sess ->
-        sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-    )
+        // 5) Registramos el filtro de JWT antes del filtro de autenticación basado en usuario/clave
         .addFilterBefore(
             new JwtAuthenticationFilter(jwtUtil),
             UsernamePasswordAuthenticationFilter.class
