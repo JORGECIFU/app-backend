@@ -72,7 +72,7 @@ public class PlataformaCuentaServiceImpl implements PlataformaCuentaService {
             .tipo(tx.getTipo())
             .monto(tx.getMonto())
             .fechaTransaccion(tx.getFechaTransaccion())
-            .balancePosterior(cuenta.getBalance())
+            .balancePosterior(tx.getBalancePosterior())
             .build())
         .collect(Collectors.toList());
   }
@@ -101,9 +101,9 @@ public class PlataformaCuentaServiceImpl implements PlataformaCuentaService {
   public TransaccionPlataformaResponse crearTransaccion(Long usuarioId, NuevaTransaccionRequest req) {
     Usuario user = usuarioRepo.findById(usuarioId)
         .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
     PlataformaFondosCuenta cuenta = cuentaRepo.findByUsuarioId(usuarioId)
         .orElseGet(() -> {
-          // si no existe, inicializar cuenta con balance 0
           PlataformaFondosCuenta nueva = PlataformaFondosCuenta.builder()
               .usuario(user)
               .balance(BigDecimal.ZERO)
@@ -111,37 +111,38 @@ public class PlataformaCuentaServiceImpl implements PlataformaCuentaService {
           return cuentaRepo.save(nueva);
         });
 
-    BigDecimal nuevoBalance = switch (req.getTipo()) {
-      case RECARGA_PLATAFORMA ->
-        // Ingreso de fondos
-          cuenta.getBalance().add(req.getMonto());
+    BigDecimal nuevoBalance;
+    switch (req.getTipo()) {
+      case RECARGA_PLATAFORMA -> {
+        nuevoBalance = cuenta.getBalance().add(req.getMonto());
+      }
       case PAGO_ALQUILER -> {
-        // Si quieres tratar el pago de alquiler
         if (cuenta.getBalance().compareTo(req.getMonto()) < 0) {
-          // lanzamos aquí la excepción
           throw new InsufficientFundsException();
         }
-        yield cuenta.getBalance().subtract(req.getMonto());
+        nuevoBalance = cuenta.getBalance().subtract(req.getMonto());
+      }
+      case GANANCIA_ALQUILER, CANCELACION_ALQUILER -> {
+        // Ambos abonan al usuario
+        nuevoBalance = cuenta.getBalance().add(req.getMonto());
       }
       case RETIRO_WALLET -> {
-        // Retiro de la plataforma al wallet
         if (cuenta.getBalance().compareTo(req.getMonto()) < 0) {
           throw new RuntimeException("Saldo insuficiente para retiro");
         }
-        yield cuenta.getBalance().subtract(req.getMonto());
+        nuevoBalance = cuenta.getBalance().subtract(req.getMonto());
       }
       default -> throw new IllegalArgumentException("Tipo de transacción no soportado: " + req.getTipo());
-    };
+    }
 
-    // actualizar balance
     cuenta.setBalance(nuevoBalance);
     cuentaRepo.save(cuenta);
 
-    // crear y guardar transacción
     PlataformaTransaccionCuenta tx = PlataformaTransaccionCuenta.builder()
         .account(cuenta)
         .tipo(req.getTipo())
         .monto(req.getMonto())
+        .balancePosterior(nuevoBalance)
         .fechaTransaccion(LocalDateTime.now())
         .build();
     PlataformaTransaccionCuenta saved = transRepo.save(tx);
@@ -151,7 +152,7 @@ public class PlataformaCuentaServiceImpl implements PlataformaCuentaService {
         .tipo(saved.getTipo())
         .monto(saved.getMonto())
         .fechaTransaccion(saved.getFechaTransaccion())
-        .balancePosterior(nuevoBalance)
+        .balancePosterior(saved.getBalancePosterior())
         .build();
   }
 }

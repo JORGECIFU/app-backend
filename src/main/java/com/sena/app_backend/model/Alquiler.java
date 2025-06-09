@@ -50,4 +50,10 @@ public class Alquiler {
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private EstadoAlquiler estado;  // ACTIVO, CERRADO
+
+  @Column(precision=19, scale=4)
+  private BigDecimal montoDevuelto;
+
+  @Column(precision=19, scale=4)
+  private BigDecimal gananciaPlataforma;
 }

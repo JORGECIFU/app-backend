@@ -1,6 +1,7 @@
 package com.sena.app_backend.controller;
 
 import com.sena.app_backend.dto.request.NuevoAlquilerRequest;
+import com.sena.app_backend.dto.response.AlquilerAdminResponse;
 import com.sena.app_backend.dto.response.AlquilerResponse;
 import com.sena.app_backend.service.AlquilerService;
 import lombok.RequiredArgsConstructor;
@@ -51,8 +52,8 @@ public class AlquilerController {
    */
   @GetMapping
   @PreAuthorize("hasAuthority('ADMINISTRADOR')")
-  public ResponseEntity<List<AlquilerResponse>> listar() {
-    List<AlquilerResponse> todos = service.listarAlquileres();
+  public ResponseEntity<List<AlquilerAdminResponse>> listarParaAdmin() {
+    List<AlquilerAdminResponse> todos = service.listarAlquileresParaAdmin();
     return ResponseEntity.ok(todos);
   }
 
@@ -127,16 +128,35 @@ public class AlquilerController {
     return ResponseEntity.ok(service.listarActivosPorUsuario(usuarioId));
   }
 
+
   /**
-   * Preview de todos los planes.
-   * - ADMINISTRADOR ve la versión completa (incluye ingresoPlataforma).
-   * - USUARIO ve sólo la parte de usuario.
+   * Lista todos los alquileres CERRADOS de un usuario.
+   * - ADMINISTRADOR puede consultar cualquiera.
+   * - USUARIO sólo los suyos.
    */
-  @GetMapping("/preview/all")
+  @GetMapping("/usuario/{usuarioId}/cerradas")
+  @PreAuthorize(
+      "hasAuthority('ADMINISTRADOR') " +
+          "or @securityService.isCurrentUser(#usuarioId, authentication)"
+  )
+  public ResponseEntity<List<AlquilerResponse>> listarCerradosUsuario(
+      @PathVariable Long usuarioId
+  ) {
+    return ResponseEntity.ok(service.listarCerradosPorUsuario(usuarioId));
+  }
+
+  /**
+   * Vista previa de todos los alquileres activos.
+   * - ADMINISTRADOR ve todos los detalles.
+   * - USUARIO no ve cuanto gana la plataforma.
+   */
+
+  @RequestMapping("/preview/all")
   public ResponseEntity<?> previewAll() {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    boolean isAdmin = auth.getAuthorities().stream()
-        .anyMatch(a -> a.getAuthority().equals("ADMINISTRADOR"));
+    boolean isAdmin = auth != null && auth.isAuthenticated()
+        && auth.getAuthorities().stream()
+           .anyMatch(a -> a.getAuthority().equals("ADMINISTRADOR"));
 
     if (isAdmin) {
       return ResponseEntity.ok(service.previewAllAdmin());

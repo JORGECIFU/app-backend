@@ -24,7 +24,7 @@ public class PlanController {
 
   private final PlanService service;
 
-  /** Cualquier usuario autenticado puede ver la lista */
+  /** Cualquiera pude ver los planes */
   @GetMapping
   public ResponseEntity<List<PlanResponse>> listar() {
     return ResponseEntity.ok(service.listarPlanes());

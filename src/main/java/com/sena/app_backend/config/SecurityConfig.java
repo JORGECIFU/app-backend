@@ -67,8 +67,10 @@ public class SecurityConfig {
 
         // 3) Ahora definimos las reglas de autorización.
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/api/auth/login").permitAll()
-            .requestMatchers("/api/auth/refresh").permitAll()
+            .requestMatchers(HttpMethod.POST,"/api/auth/login").permitAll()
+            .requestMatchers(HttpMethod.POST,"/api/auth/refresh").permitAll()
+            .requestMatchers(HttpMethod.GET,"/api/alquileres/preview/all").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/planes").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/usuarios").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/usuarios").hasAuthority("ADMINISTRADOR")
             .requestMatchers(HttpMethod.PUT, "/api/admin/**").hasAuthority("ADMINISTRADOR")

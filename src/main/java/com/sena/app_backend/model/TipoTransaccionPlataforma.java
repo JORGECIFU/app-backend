@@ -8,5 +8,6 @@ public enum TipoTransaccionPlataforma {
   RECARGA_PLATAFORMA,   // Ingreso de fondos desde pasarela de pago
   PAGO_ALQUILER,        // Descuento para iniciar o renovar alquilera
   GANANCIA_ALQUILER,    // Transferencia de ganancias al monedero del usuario
-  RETIRO_WALLET         // Transferencia de plataforma al monedero digital
+  RETIRO_WALLET,         // Transferencia de plataforma al monedero digital
+  CANCELACION_ALQUILER   // Devolución (parcial o total) al usuario por cancelación anticipada
 }

@@ -28,6 +28,10 @@ public class Maquina {
   @Column(nullable = false)
   private EstadoMaquina estado;   // DISPONIBLE, RENTADA, MANTENIMIENTO
 
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private NivelRecursos recursos;
+
   @Column(columnDefinition = "TEXT")
   private String especificaciones;
 }

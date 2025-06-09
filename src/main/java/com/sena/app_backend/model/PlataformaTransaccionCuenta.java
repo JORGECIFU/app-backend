@@ -34,6 +34,9 @@ public class PlataformaTransaccionCuenta {
   @Column(name = "monto", precision = 19, scale = 4, nullable = false)
   private BigDecimal monto;
 
+  @Column(name = "balance_posterior", precision = 19, scale = 4, nullable = false)
+  private BigDecimal balancePosterior;
+
   @Column(name = "fecha_transaccion", nullable = false)
   private LocalDateTime fechaTransaccion;
 }

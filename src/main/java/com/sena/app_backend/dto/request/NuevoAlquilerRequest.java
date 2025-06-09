@@ -14,6 +14,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class NuevoAlquilerRequest {
-  private Long maquinaId;
   private Long planId;
 }

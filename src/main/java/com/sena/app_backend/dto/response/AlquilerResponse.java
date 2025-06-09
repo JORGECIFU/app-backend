@@ -28,4 +28,8 @@ public class AlquilerResponse {
   private BigDecimal precioAlquiler;
   private BigDecimal costoTotal;
   private EstadoAlquiler estado;
+  /** Monto devuelto al usuario si hubo cancelación anticipada */
+  private BigDecimal montoDevuelto;
+  /** Ganancia de la plataforma por este alquiler */
+  private BigDecimal gananciaPlataforma;
 }

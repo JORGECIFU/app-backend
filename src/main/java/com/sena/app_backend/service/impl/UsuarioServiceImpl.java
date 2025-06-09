@@ -163,6 +163,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     Usuario u = repo.findById(id)
         .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + id));
     u.setNombre(req.getNombre());
+    u.setApellido(req.getApellido());
     u.setEmail(req.getEmail());
     if (req.getPassword() != null && !req.getPassword().isBlank()) {
       u.setPassword(passwordEncoder.encode(req.getPassword()));
