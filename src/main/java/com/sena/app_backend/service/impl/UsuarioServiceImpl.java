@@ -5,8 +5,7 @@ import com.sena.app_backend.dto.response.UsuarioResponse;
 import com.sena.app_backend.model.PlataformaFondosCuenta;
 import com.sena.app_backend.model.Rol;
 import com.sena.app_backend.model.Usuario;
-import com.sena.app_backend.repository.PlataformaFondosCuentaRepository;
-import com.sena.app_backend.repository.UsuarioRepository;
+import com.sena.app_backend.repository.*;
 import com.sena.app_backend.service.UsuarioService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +32,10 @@ public class UsuarioServiceImpl implements UsuarioService {
    * Se utiliza para operaciones relacionadas con las cuentas de fondos.
    */
   private final PlataformaFondosCuentaRepository cuentaRepo;
+  private final RefreshTokenRepository refreshTokenRepo;
+  private final MonederoRepository monederoRepo;
+  private final PlataformaTransaccionCuentaRepository transRepo;
+  private final AlquilerRepository alquilerRepo;
   private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
   /**
@@ -187,9 +190,20 @@ public class UsuarioServiceImpl implements UsuarioService {
    */
   @Override
   public void eliminarUsuario(Long id) {
-    if (!repo.existsById(id)) {
-      throw new RuntimeException("Usuario no encontrado: " + id);
-    }
+    Usuario u = repo.findById(id)
+        .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + id));
+    // Si el usuario tiene una cuenta de fondos, la eliminamos
+    cuentaRepo.findByUsuarioId(id).ifPresent(cuentaRepo::delete);
+    // Si el usuario tiene un monedero, lo eliminamos
+    monederoRepo.deleteAll(monederoRepo.findByUsuarioId(id));
+    // Si el usuario tiene tokens de refresco, los eliminamos
+    refreshTokenRepo.deleteAll(refreshTokenRepo.findByUserId(id));
+    // Si el usuario tiene transacciones, las eliminamos
+    transRepo.deleteAll(transRepo.findByAccountId(id));
+    // Si el usuario tiene alquileres, los eliminamos
+    alquilerRepo.deleteAll(alquilerRepo.findByUsuarioId(id));
+
+    // Eliminar el usuario
     repo.deleteById(id);
   }
 
@@ -213,7 +227,6 @@ public class UsuarioServiceImpl implements UsuarioService {
       // 2) Cambiar rol
       u.setRol(Rol.ADMINISTRADOR);
       repo.save(u);
-
       // 3) Eliminar su cuenta de fondos (ya no la necesita)
       cuentaRepo.findByUsuarioId(id).ifPresent(cuentaRepo::delete);
     }

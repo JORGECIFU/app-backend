@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface PlataformaTransaccionCuentaRepository extends JpaRepository<PlataformaTransaccionCuenta, Long> {
   List<PlataformaTransaccionCuenta> findByAccountIdOrderByFechaTransaccionDesc(Long accountId);
+
+  Iterable<? extends PlataformaTransaccionCuenta> findByAccountId(Long accountId);
 }

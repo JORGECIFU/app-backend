@@ -5,5 +5,6 @@ package com.sena.app_backend.model;
  */
 public enum CriptoMoneda {
   BTC,
-  ETH
+  ETH,
+  DOGE
 }

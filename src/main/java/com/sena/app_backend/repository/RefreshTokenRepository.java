@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -33,4 +34,12 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
   @Transactional
   @Query("DELETE FROM RefreshToken rt WHERE rt.user = :user")
   int deleteByUser(Usuario user);
+
+  /**
+   * Busca un RefreshToken por el ID del usuario.
+   *
+   * @param id El ID del usuario cuyo RefreshToken se busca.
+   * @return Un Optional que contiene el RefreshToken si se encuentra, o vacío si no.
+   */
+  List<RefreshToken> findByUserId(Long id);
 }
