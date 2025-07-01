@@ -27,6 +27,8 @@ public class Usuario {
   private String email;
   private String password;
 
+  private String profilePhotoName;  // Nombre de la foto de perfil
+
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private Rol rol = Rol.USUARIO;  // valor por defecto

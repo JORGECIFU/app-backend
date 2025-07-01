@@ -31,3 +31,5 @@ build/
 
 ### VS Code ###
 .vscode/
+/src/main/resources/service-google-key.json
+/src/main/resources/service-google-key.json

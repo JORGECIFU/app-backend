@@ -51,6 +51,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         .apellido(u.getApellido())
         .email(u.getEmail())
         .rol(u.getRol())
+        .profilePhotoName(u.getProfilePhotoName())
         .build();
   }
 

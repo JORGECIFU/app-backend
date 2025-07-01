@@ -6,6 +6,7 @@ import com.sena.app_backend.model.NivelRecursos;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -19,4 +20,5 @@ public interface MaquinaRepository extends JpaRepository<Maquina, Long> {
       EstadoMaquina estado,
       NivelRecursos recursos
   );
+  List<Maquina> findByEstadoIn(List<EstadoMaquina> estados);
 }

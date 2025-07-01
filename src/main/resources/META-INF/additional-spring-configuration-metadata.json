@@ -1,0 +1,8 @@
+{
+  "properties": [
+    {
+      "name": "gcp.storage.bucketName",
+      "type": "java.lang.String",
+      "description": "Description for gcp.storage.bucketName."
+  }
+] }
